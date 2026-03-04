@@ -4,7 +4,7 @@
 
 **Курс:** Проектирование высоконагруженных систем  
 
-**Репозиторий:** git@github.com:Revachol/vk_highload_music.git
+**Репозиторий:** https://github.com/Revachol/vk_highload_spotify
 
 ## 1. Тема и целевая аудитория
 
