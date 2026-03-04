@@ -117,10 +117,22 @@
 
 ## 4. Список источников
 
-1. Spotify Q4 2024 Earnings Report. *"Spotify Technology S.A. Announces Financial Results"*. 2025. URL: https://investors.spotify.com/
-2. Apple Inc. *"Services Revenue Report Q1 2025"*. Apple Investor Relations, 2025.
-3. Яндекс. *"Отчет о финансовых результатах за 2024 год"*. Yandex IR, 2025.
-4. IFPI. *"Global Music Report 2024: State of the Industry"*. International Federation of the Phonographic Industry, 2024.
-5. Spotify Engineering Blog. *"How Spotify Builds and Scales Playlists"*. Spotify R&D, 2023. URL: https://engineering.atspotify.com/
-6. Kleppmann, M. *"Designing Data-Intensive Applications"*. O'Reilly Media, 2017. (Глава 11: Stream Processing)
-7. Spotify Backstage. *"Scaling Spotify's Backend: From Monolith to Microservices"*. Spotify Tech Talks, 2020.
+1. Kent Online. *"Spotify user numbers hit record high"*. Февраль 2025. URL: https://premium.kentonline.co.uk/news/national/spotify-user-numbers-hit-record-high-138472/ [citation:1]
+
+2. Spotify Advertising. *"Five Years Of Discover Weekly"*. Июль 2020. URL: https://ads.spotify.com/en-US/news-and-insights/five-years-of-discovery-and-engagement-through-discover-weekly/ [citation:2]
+
+3. Kursiv Media. *"Интернет-пираты грозят выложить бесплатно крупнейшую базу музыки со Spotify"*. Декабрь 2025. URL: https://kz.kursiv.media/2025-12-24/assm-internet-piraty-grozyat-vylozhit-besplatno-krupneyshuyu-bazu-muzyki-so-spotify/ [citation:3]
+
+4. Spotify Engineering Blog. *Official technology blog*. URL: https://engineering.atspotify.com/ [citation:4]
+
+5. Music Ally Japan. *"Spotify、2025年Q1決算を発表"*. Апрель 2025. URL: https://www.musically.jp/spotify-2025-q1 [citation:5]
+
+6. Spotify Newsroom. *"Spotify Users Have Spent Over 2.3 Billion Hours Streaming Discover Weekly Playlists Since 2015"*. Июль 2020. URL: https://newsroom.spotify.com/2020-07-09/spotify-users-have-spent-over-2-3-billion-hours-streaming-discover-weekly-playlists-since-2015/ [citation:6]
+
+7. Spotify Engineering. *"The Rise (and Lessons Learned) of ML Models to Personalize Content on Home (Part I)"*. Ноябрь 2021. URL: https://engineering.atspotify.com/2021/11/the-rise-and-lessons-learned-of-ml-models-to-personalize-content-on-home-part-i/ [citation:7]
+
+8. Finversia. *"Ежемесячное количество активных пользователей Spotify превысило 500 миллионов"*. Май 2025. URL: https://www.finversia.ru/publication/ezhemesyachnoe-kolichestvo-aktivnykh-polzovatelei-spotify-prevysilo-500-millionov-129483 [citation:8]
+
+9. Hypebot. *"Spotify Discover Weekly stats shared as playlist turns 5"*. Июль 2025. URL: https://www.hypebot.com/hypebot/2025/07/spotify-shares-discovery-weekly-stats-as-playlist-turns-5.html [citation:9]
+
+10. Spotify Engineering. *"Introducing Voyager: Spotify‘s New Nearest-Neighbor Search Library"*. Октябрь 2023. URL: https://engineering.atspotify.com/2023/10/introducing-voyager-spotifys-new-nearest-neighbor-search-library/ [citation:10]
