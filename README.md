@@ -184,26 +184,167 @@
 | **Шардирование БД** | Пиковые 150k RPS на чтение требуют горизонтального масштабирования и кэширования (Redis) |
 | **Big Data для ML** | 2.7 трлн записей истории в год — распределённая обработка (Spark) для рекомендаций |
 
+# 3. Глобальная балансировка нагрузки
 
+### 3.1 Функциональное разбиение по доменам
 
-## Список источников
+На основе анализа публичной DNS-инфраструктуры Spotify и данных о поддоменах используются следующие доменные имена:
 
-1. Kent Online. *"Spotify user numbers hit record high"*. Февраль 2025. URL: https://premium.kentonline.co.uk/news/national/spotify-user-numbers-hit-record-high-138472/ [citation:1]
+| Доменное имя | Назначение |
+|--------------|------------|
+| `spotify.com` | Основной сайт, точка входа |
+| `open.spotify.com` | Веб-плеер (главный клиентский интерфейс) |
+| `api.spotify.com` | Публичное Web API для сторонних разработчиков |
+| `accounts.spotify.com` | Аутентификация и управление аккаунтами (Auth0/OAuth) |
+| `spclient.wg.spotify.com` | Закрытое API для мобильных и десктоп-клиентов [1] |
+| `exp.wg.spotify.com` | Экспериментальные сервисы и A/B-тестирование [1] |
+| `gae2-dnsresolver-a-0319.gae2.spotify.com` | Внутренний DNS-резолвер в регионе Азии [1] |
+| `media.spotify.com` | Доставка обложек и изображений |
+| `charts.spotify.com` | Сервис чартов и статистики |
+| `podcast.spotify.com` | Платформа подкастов |
+| `artists.spotify.com` | Портал для исполнителей (Spotify for Artists) |
+| `newsroom.spotify.com` | Пресс-центр и новости |
+| `support.spotify.com` | Служба поддержки |
 
-2. Spotify Advertising. *"Five Years Of Discover Weekly"*. Июль 2020. URL: https://ads.spotify.com/en-US/news-and-insights/five-years-of-discovery-and-engagement-through-discover-weekly/ [citation:2]
+Источник: https://webtechsurvey.com/website/play.spotify.com
 
-3. Kursiv Media. *"Интернет-пираты грозят выложить бесплатно крупнейшую базу музыки со Spotify"*. Декабрь 2025. URL: https://kz.kursiv.media/2025-12-24/assm-internet-piraty-grozyat-vylozhit-besplatno-krupneyshuyu-bazu-muzyki-so-spotify/ [citation:3]
+Согласно данным DNSViz, авторитативные DNS-серверы Spotify размещены на платформе Google Domains [9]:
+- `ns-cloud-a1.googledomains.com`
+- `ns-cloud-a2.googledomains.com`
+- `ns-cloud-a3.googledomains.com`
+- `ns-cloud-a4.googledomains.com`
+- `dns1.p07.nsone.net`
 
-4. Spotify Engineering Blog. *Official technology blog*. URL: https://engineering.atspotify.com/ [citation:4]
+Источник: https://dnsviz.net/d/spotify.com/Z1NL2w/servers/
 
-5. Music Ally Japan. *"Spotify、2025年Q1決算を発表"*. Апрель 2025. URL: https://www.musically.jp/spotify-2025-q1 [citation:5]
+### 3.2 Расположение дата-центров
 
-6. Spotify Newsroom. *"Spotify Users Have Spent Over 2.3 Billion Hours Streaming Discover Weekly Playlists Since 2015"*. Июль 2020. URL: https://newsroom.spotify.com/2020-07-09/spotify-users-have-spent-over-2-3-billion-hours-streaming-discover-weekly-playlists-since-2015/ [citation:6]
+На основе исторических данных о развитии инфраструктуры Spotify и анализа сетевой архитектуры:
 
-7. Spotify Engineering. *"The Rise (and Lessons Learned) of ML Models to Personalize Content on Home (Part I)"*. Ноябрь 2021. URL: https://engineering.atspotify.com/2021/11/the-rise-and-lessons-learned-of-ml-models-to-personalize-content-on-home-part-i/ [citation:7]
+| Расположение | Обслуживаемый регион | Обоснование выбора |
+|--------------|----------------------|--------------------|
+| Стокгольм, Швеция | Северная Европа, СНГ | Историческая штаб-квартира, первый дата-центр компании на 70 петабайт [2]. Ключевой узел для покрытия Скандинавии и Восточной Европы. |
+| Лондон, Великобритания | Западная Европа, Великобритания | Крупнейшая точка обмена трафиком LINX, обеспечивает минимальные задержки для Великобритании и Западной Европы [2]. |
+| Сан-Хосе, США | Северная Америка (западное побережье) | Покрытие западной части США и Тихоокеанского побережья [2]. |
+| Ашберн, США | Северная Америка (восточное побережье) | Крупнейший интернет-узел на восточном побережье, покрытие восточной части США, Канады и Карибского бассейна [2]. |
+| Сингапур* | Азия и Океания | Ключевой узел в Азиатско-Тихоокеанском регионе, обеспечивает покрытие Юго-Восточной Азии и Океании [2]. |
+| Сан-Паулу, Бразилия* | Южная Америка | Покрытие Латинской Америки с минимальными задержками для крупнейшего рынка региона — Бразилии [2]. |
 
-8. Finversia. *"Ежемесячное количество активных пользователей Spotify превысило 500 миллионов"*. Май 2025. URL: https://www.finversia.ru/publication/ezhemesyachnoe-kolichestvo-aktivnykh-polzovatelei-spotify-prevysilo-500-millionov-129483 [citation:8]
+\* *Отмечены регионы, где Spotify использует комбинацию собственных точек присутствия и арендованных мощностей Google Cloud Platform [2].*
 
-9. Hypebot. *"Spotify Discover Weekly stats shared as playlist turns 5"*. Июль 2025. URL: https://www.hypebot.com/hypebot/2025/07/spotify-shares-discovery-weekly-stats-as-playlist-turns-5.html [citation:9]
+Дополнительно Spotify использует 5 точек обмена интернет-трафиком (IXP): Стокгольм, Лондон, Амстердам, Франкфурт и Ашберн , а также арендует локальные сети CDN для обеспечения незамедлительного воспроизведения контента.
 
-10. Spotify Engineering. *"Introducing Voyager: Spotify‘s New Nearest-Neighbor Search Library"*. Октябрь 2023. URL: https://engineering.atspotify.com/2023/10/introducing-voyager-spotifys-new-nearest-neighbor-search-library/ [citation:10]
+С 2016 года компания также активно использует Google Cloud Platform, что позволяет гибко масштабироваться и оптимизировать затраты.
+Исто
+
+### 3.3 Распределение запросов по ДЦ
+
+Распределение трафика пропорционально доле активной аудитории в регионе. На основе данных о географии пользователей Spotify [7]:
+
+| Регион (ДЦ) | Процент аудитории | Пиковый RPS (API) | Примечание |
+|-------------|-------------------|-------------------|------------|
+| США (Сан-Хосе + Ашберн) | 28.23% | ~72 000 | Крупнейший рынок, обслуживается двумя ДЦ |
+| Бразилия (Сан-Паулу) | 4.61% | ~11 800 | Весь трафик Латинской Америки |
+| Великобритания (Лондон) | 4.47% | ~11 400 | Включает Западную Европу |
+| Мексика (Сан-Паулу) | 4.27% | ~10 900 | Трафик через бразильский ДЦ |
+| Индия (Сингапур) | 3.90% | ~10 000 | Трафик через азиатский узел |
+| Прочие регионы | 54.52% | ~139 000 | Распределяется по всем ДЦ |
+| **Итого** | **100%** | **~255 000** | Пиковый суммарный RPS |
+
+*Примечание: RPS рассчитан на основе пикового значения 255 000 запросов в секунду из предыдущих разделов.*
+
+Для домена `play.spotify.com` (веб-плеер) используется IP-адрес `35.186.224.24`, принадлежащий Google Cloud Platform (AS16550) [5]. Этот IP обслуживает 64 сайта и использует сертификаты DigiCert Inc [5].
+
+### 3.4 Схема балансировки
+
+Для глобального распределения трафика Spotify использует многоуровневую схему на основе собственной DNS-инфраструктуры [1]:
+
+**1. Собственные DNS-серверы (Self-hosted DNS)**
+
+Spotify управляет собственной DNS-инфраструктурой on-premise [1]:
+- **Скрытый первичный сервер (Stealth primary)** — работает на BIND, компилирует зональные файлы
+- **Авторитативные nameserver'ы** — не менее двух на каждую географическую локацию, четыре публичных
+- **Резолверы Unbound** — не менее двух на каждый дата-центр, кэширующие DNS-запросы
+- **Unbound на каждом хосте** — обеспечивает кэширование и снижает нагрузку на центральные резолверы
+
+**2. Latency-based DNS**
+
+Unbound-резолверы выбирают DNS-сервер на основе RTT (Round-Trip Time) с порогом 400 мс [1]. Пример из инфраструктуры Spotify (резолвер в регионе Asia East) [1]:
+- Ближайший авторитативный сервер: `10.175.0.4` — RTT 12 мс (локальный)
+- Серверы в западной части США — RTT ~150–500 мс
+- Остальные серверы — RTT > 700 мс
+
+**3. Google Cloud Platform Anycast**
+
+Для части инфраструктуры Spotify использует Anycast через Google Cloud Platform [8]. Технология Anycast позволяет направлять трафик к ближайшему дата-центру на сетевом уровне. Это подтверждается анализом IP-адресов Spotify [8].
+
+**4. Интеграция с облачными провайдерами**
+
+Spotify использует гибридную модель:
+- **Google Cloud Platform** для части инфраструктуры [5][8]
+- **AWS** с Route 53 для DNS-балансировки и CloudFront для CDN [6]
+
+### 3.5 Механизмы регулировки трафика между ДЦ
+
+**1. Автоматизация DNS-деплоя**
+
+С 2014 года Spotify полностью автоматизировал управление DNS [1]:
+- Cron-скрипты на Python запускаются каждые 10 минут
+- Генерация записей из физического инвентаря (ServerDB) и облачных инстансов (Google Compute API)
+- Коммит в Git-репозиторий (источник истины)
+- Компиляция зон на первичном сервере каждые 5 минут
+- Уведомление авторитативных серверов об изменениях (AXFR-трансфер)
+
+Полный цикл распространения записи занимает ~15 минут [1].
+
+**2. Приоритизация локаций (GSLB)**
+
+Механизм аналогичен описанному в примере VK Play:
+- Для каждого пользователя по IP определяется сетевой префикс
+- Формируется ранжированный список приоритетных локаций
+- Запросы направляются на площадку с наивысшим приоритетом
+- При достижении порога утилизации часть трафика перенаправляется на следующую локацию
+
+**3. Клиентская балансировка (Spotify Protocol)**
+
+Клиентские приложения Spotify используют кастомный протокол с умной балансировкой:
+- Первичное подключение через GeoDNS
+- Измерение задержек до нескольких edge-серверов
+- Адаптивный выбор сервера с минимальной задержкой
+- Автоматическое переключение при ухудшении качества соединения
+
+**4. Мультиоблачное развертывание**
+
+Spotify использует Kubernetes-кластеры, развернутые в нескольких облачных провайдерах для обеспечения высокой доступности [3]:
+- Автоматическое масштабирование под нагрузку (auto-scaling)
+- Zero-downtime обновления через rolling updates и canary deployments
+- Мгновенный откат при обнаружении проблем
+- Выбор ближайшего дата-центра для ускорения доставки контента
+
+**5. Мониторинг и Health Checks**
+
+Активные проверки состояния дата-центров [1]:
+- Мониторинг доступности авторитативных серверов
+- При деградации сервиса — автоматический вывод из DNS-выдачи
+- TXT-запись с хешем коммита для отслеживания версии конфигурации в продакшене
+
+# Источники
+
+1. Spotify Engineering. *"Spotify‘s Love/Hate Relationship with DNS"*. SRECon 2017. URL: https://engineering.atspotify.com/2017/03/spotifys-love-hate-relationship-with-dns/ [citation:1]
+
+2. Википедия. *"Spotify: различия между версиями"*. 2021. URL: https://ru.m.wikipedia.org/w/index.php?diff=100358726 [citation:2]
+
+3. Team IT Security. *"How Spotify Uses Containers and Kubernetes to Scale Seamlessly"*. 2025. URL: https://tsecurity.de/de/2653747/IT+Programmierung/How+Spotify+Uses+Containers+and+Kubernetes+to+Scale+Seamlessly [citation:3]
+
+4. System Design Interview Roadmap. *"Global Load Balancing Strategies"*. 2025. URL: https://systemdr.substack.com/p/global-load-balancing-strategies [citation:4]
+
+5. WebTechSurvey. *"play.spotify.com technology stack"*. 2025. URL: https://webtechsurvey.com/website/play.spotify.com [citation:5]
+
+6. AWS in Plain English. *"Spotify on AWS: Cloud Architecture That Powers Music Streaming at Scale"*. 2025. URL: https://aws.plainenglish.io/spotify-on-aws-cloud-architecture-that-powers-music-streaming-at-scale-4655de830493 [citation:6]
+
+7. Ivan-Bir. *"Highload-Spotify: Курсовая работа по курсу 'Проектирование высоконагруженных систем'"*. GitHub, 2023. URL: https://github.com/Ivan-Bir/Highload-Spotify [citation:7]
+
+8. Netify. *"35.186.224.19 - IP Info - Spotify on Google Cloud Platform"*. 2025. URL: https://www.netify.ai/resources/ips/35.186.224.19 [citation:8]
+
+9. DNSViz. *"spotify.com DNS Server Status"*. 2024. URL: https://dnsviz.net/d/spotify.com/Z1NL2w/servers/ [citation:9]
+
