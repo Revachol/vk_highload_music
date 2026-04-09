@@ -295,6 +295,166 @@
 Расчет: 140 Гбит/с / 40 Гбит/с = 3.5 то есть 4 сервера.
 С учетом резерва (N+1): Нам нужно 5 серверов L4.
 
+## 5 Логическая БД
+```mermaid
+erDiagram
+  USERS {
+    uuid user_id PK
+    varchar email
+    varchar username
+    varchar password_hash
+    enum subscription_type
+    char country_code
+    timestamp created_at
+    timestamp updated_at
+  }
+  SESSIONS {
+    uuid session_id PK
+    uuid user_id FK
+    varchar device_id
+    varchar access_token_hash
+    varchar refresh_token_hash
+    timestamp expires_at
+    varchar ip_address
+  }
+  ARTISTS {
+    uuid artist_id PK
+    varchar name
+    text bio
+    char country_code
+    varchar image_url
+    bool verified
+    timestamp created_at
+  }
+  ALBUMS {
+    uuid album_id PK
+    uuid artist_id FK
+    varchar title
+    date release_date
+    varchar cover_url
+    enum album_type
+    timestamp created_at
+  }
+  TRACKS {
+    uuid track_id PK
+    uuid album_id FK
+    uuid artist_id FK
+    varchar title
+    int duration_ms
+    smallint track_number
+    bool explicit
+    float popularity_score
+    varchar isrc
+    timestamp created_at
+  }
+  AUDIO_FILES {
+    uuid file_id PK
+    uuid track_id FK
+    smallint bitrate_kbps
+    enum format
+    varchar storage_key
+    bigint file_size_bytes
+    varchar cdn_url
+  }
+  IMAGES {
+    uuid image_id PK
+    enum entity_type
+    uuid entity_id
+    enum size
+    varchar storage_key
+    varchar cdn_url
+    int width_px
+    int height_px
+  }
+  PLAYLISTS {
+    uuid playlist_id PK
+    uuid owner_user_id FK
+    varchar title
+    text description
+    varchar cover_url
+    bool is_public
+    bool is_collaborative
+    bool is_generated
+    timestamp created_at
+    timestamp updated_at
+  }
+  PLAYLIST_TRACKS {
+    uuid playlist_id FK
+    uuid track_id FK
+    int position
+    uuid added_by_user_id FK
+    timestamp added_at
+  }
+  USER_LIBRARY {
+    uuid user_id FK
+    uuid track_id FK
+    timestamp liked_at
+  }
+  PLAY_HISTORY {
+    uuid event_id PK
+    uuid user_id FK
+    uuid track_id FK
+    timestamp played_at
+    int duration_played_ms
+    enum source
+    uuid context_id
+  }
+  USER_FOLLOWS_ARTIST {
+    uuid user_id FK
+    uuid artist_id FK
+    timestamp followed_at
+  }
+  USER_FOLLOWS_USER {
+    uuid follower_id FK
+    uuid followee_id FK
+    timestamp followed_at
+  }
+  DEVICE_SESSIONS {
+    uuid device_id PK
+    uuid user_id FK
+    varchar device_name
+    enum device_type
+    uuid current_track_id FK
+    int position_ms
+    bool is_playing
+    smallint volume
+    timestamp last_seen_at
+    jsonb queue
+  }
+  RECOMMENDATIONS_CACHE {
+    uuid user_id FK
+    enum playlist_type
+    timestamp generated_at
+    timestamp expires_at
+    jsonb track_ids
+  }
+  GEO_RESTRICTIONS {
+    uuid track_id FK
+    char country_code
+    bool is_available
+  }
+
+  USERS ||--o{ SESSIONS : "has"
+  USERS ||--o{ PLAYLISTS : "owns"
+  USERS ||--o{ USER_LIBRARY : "saves"
+  USERS ||--o{ PLAY_HISTORY : "generates"
+  USERS ||--o{ DEVICE_SESSIONS : "uses"
+  USERS ||--o{ USER_FOLLOWS_ARTIST : "follows"
+  USERS ||--o{ USER_FOLLOWS_USER : "follows"
+  USERS ||--o{ RECOMMENDATIONS_CACHE : "receives"
+  ARTISTS ||--o{ ALBUMS : "releases"
+  ARTISTS ||--o{ TRACKS : "performs"
+  ALBUMS ||--o{ TRACKS : "contains"
+  TRACKS ||--o{ AUDIO_FILES : "has"
+  TRACKS ||--o{ GEO_RESTRICTIONS : "restricted_by"
+  TRACKS ||--o{ USER_LIBRARY : "in"
+  TRACKS ||--o{ PLAY_HISTORY : "in"
+  TRACKS ||--o{ PLAYLIST_TRACKS : "in"
+  PLAYLISTS ||--o{ PLAYLIST_TRACKS : "contains"
+  DEVICE_SESSIONS }o--|| TRACKS : "plays"
+```
+
+
 # Источники
 
 1. Spotify Engineering. *"Spotify‘s Love/Hate Relationship with DNS"*. SRECon 2017. URL: https://engineering.atspotify.com/2017/03/spotifys-love-hate-relationship-with-dns/ [citation:1]
